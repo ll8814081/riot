@@ -13,6 +13,7 @@ import (
 
 type API interface {
 	GetValue(bucektName, key string) (value []byte, err error)
+	GetPrefixKV(bucektName, keyPrefix string) (kv map[string][]byte, err error)
 	DelKey(bucketName, key string) (err error)
 	SetKV(bucketName, key string, value []byte) (err error)
 	CreateBucket(bucketName string) (err error)
@@ -31,6 +32,13 @@ func NewMiniAPI(c *cluster.Cluster) API {
 
 func (api *miniAPI) GetValue(bucketName, key string) (value []byte, err error) {
 	if value, err = api.c.Get([]byte(bucketName), []byte(key)); err != nil && err != cluster.ErrNotFound {
+		log.Error("err", err)
+	}
+	return
+}
+
+func (api *miniAPI) GetPrefixKV(bucektName, keyPrefix string) (kv map[string][]byte, err error) {
+	if kv, err = api.c.GetPrefixKV([]byte(bucektName), []byte(keyPrefix)); err != nil {
 		log.Error("err", err)
 	}
 	return

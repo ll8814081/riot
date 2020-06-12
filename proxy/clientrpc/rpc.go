@@ -17,6 +17,7 @@ var (
 const (
 	APIService             = "APIService"
 	APIServiceKV           = APIService + "." + "KV"
+	APIServiceGetPrefixKV  = APIService + "." + "GetPrefixKV"
 	APIServiceSetKV        = APIService + "." + "SetKV"
 	APIServiceDelKey       = APIService + "." + "DelKey"
 	APIServiceDelBucket    = APIService + "." + "DelBucket"
@@ -43,7 +44,23 @@ func KV(bucketName, key string, qs int) (value []byte, has bool, err error) {
 		err = DefaultRaftRPC.Call(APIServiceKV, &arg, &reply)
 	}
 	value = reply.Value
+	has = reply.Has
+	return
+}
 
+func GetPrefixKV(bucketName, keyPrefix string, qs int) (value map[string][]byte, has bool, err error) {
+	var (
+		arg   = api.GetPrefixKVArg{BucketName: bucketName, KeyPrefix: keyPrefix}
+		reply api.GetPrefixKVReply
+	)
+
+	if qs == 1 {
+		err = DefaultLeaderRPC.Call(APIServiceGetPrefixKV, &arg, &reply)
+	} else {
+		err = DefaultRaftRPC.Call(APIServiceGetPrefixKV, &arg, &reply)
+	}
+	value = reply.Kv
+	has = reply.Has
 	return
 }
 

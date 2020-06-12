@@ -27,9 +27,19 @@ type GetKVArg struct {
 	Key        string
 }
 
+type GetPrefixKVArg struct {
+	BucketName string
+	KeyPrefix  string
+}
+
 type GetKVReply struct {
 	Has   bool
 	Value []byte
+}
+
+type GetPrefixKVReply struct {
+	Has bool
+	Kv  map[string][]byte
 }
 
 type DelKVArg struct {
@@ -111,6 +121,17 @@ func (s *APIService) SetKV(_ context.Context, arg *SetKVArg, reply *SetKVReply) 
 		err = nil
 		reply.HasBucket = false
 	}
+	return
+}
+
+func (s *APIService) GetPrefixKV(_ context.Context, arg *GetPrefixKVArg, reply *GetPrefixKVReply) (err error) {
+	kv, err := s.api.GetPrefixKV(arg.BucketName, arg.KeyPrefix)
+	if len(kv) == 0 {
+		reply.Has = false
+	} else {
+		reply.Has = true
+	}
+	reply.Kv = kv
 	return
 }
 

@@ -5,6 +5,7 @@ import (
 
 	log "github.com/laohanlinux/utils/gokitlog"
 	"github.com/syndtr/goleveldb/leveldb"
+	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
 // LeveldbStorage is a backend store type
@@ -29,13 +30,13 @@ func NewLeveldbStorage(dir string) *LeveldbStorage {
 
 // Get implements RiotStorage interface
 func (edbs *LeveldbStorage) Get(_, key []byte) ([]byte, error) {
-	log.Infof("Get a value by ", string(key))
+	log.Info("Get a value by ", string(key))
 	return edbs.DB.Get(key, nil)
 }
 
 // Set implements RiotStorage interface
 func (edbs *LeveldbStorage) Set(_, key, value []byte) error {
-	log.Infof("Set a key/value:", string(key), string(value))
+	log.Info("Set a key/value:", string(key), string(value))
 	return edbs.DB.Put(key, value, nil)
 }
 
@@ -54,6 +55,21 @@ func (edbs *LeveldbStorage) Rec() <-chan Iterm {
 	edbs.l.Lock()
 	go edbs.streamWorker()
 	return edbs.c
+}
+
+func (edbs *LeveldbStorage) GetPrefixKV(_, keyPrefix []byte) (map[string][]byte, error) {
+	log.Info("GetPrefixKV  ", string(keyPrefix))
+	iter := edbs.NewIterator(util.BytesPrefix(keyPrefix), nil)
+	ret := make(map[string][]byte)
+	for iter.Next() {
+		key := make([]byte, len(iter.Key()))
+		value := make([]byte, len(iter.Value()))
+		copy(key, iter.Key())
+		copy(value, iter.Value())
+		log.Debug(string(key), string(value))
+		ret[string(key)] = value
+	}
+	return ret, nil
 }
 
 // TODO:

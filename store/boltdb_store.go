@@ -1,6 +1,7 @@
 package store
 
 import (
+	"bytes"
 	"sync"
 
 	"github.com/boltdb/bolt"
@@ -113,6 +114,28 @@ func (bdbs *BoltdbStore) Get(bucket, key []byte) (value []byte, err error) {
 		return nil, errors.ErrNotFound
 	}
 	return value, nil
+}
+
+func (bdbs *BoltdbStore) GetPrefixKV(bucket, keyPrefix []byte) (ret map[string][]byte, err error) {
+	err = bdbs.View(func(tx *bolt.Tx) error {
+		var (
+			bt *bolt.Bucket
+		)
+		if bt = tx.Bucket(bucket); bt == nil {
+			return bolt.ErrBucketNotFound
+		}
+		c := bt.Cursor()
+		for k, v := c.Seek(keyPrefix); k != nil && bytes.HasPrefix(k, keyPrefix); k, v = c.Next() {
+			value := make([]byte, len(v))
+			copy(value, v)
+			ret[string(k)] = value
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
 // Set implements the RiotStorage interface

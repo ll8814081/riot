@@ -76,3 +76,38 @@ func DelValue(ctx *macaron.Context) {
 		return
 	}
 }
+
+func GetPrefixKV(ctx *macaron.Context) {
+	var (
+		keyPrefix = ctx.Params("keyPrefix")
+		bucket    = ctx.Params("bucket")
+		qsValue   = ctx.Req.URL.Query().Get("qs")
+		qs        int
+		res, _    = ctx.Data[middleware.ResKey].(map[string]interface{})
+		value     map[string][]byte
+		has       bool
+		err       error
+	)
+	if qsValue != "" {
+		if qs, err = strconv.Atoi(qsValue); err != nil || (qs != 0 && qs != 1) {
+			log.Error("err", err)
+			res["ret"] = errcode.ErrCodeInvalidRequest
+			return
+		}
+	}
+
+	if value, has, err = clientrpc.GetPrefixKV(bucket, keyPrefix, qs); err != nil {
+		log.Error("err", err)
+		return
+	}
+	if !has {
+		res["ret"] = errcode.ErrCodeNotFound
+		return
+	}
+	dataTmp := make(map[string]string)
+	for k, v := range value {
+		dataTmp[k] = string(v)
+	}
+
+	res["data"] = fmt.Sprintf("%v", dataTmp)
+}

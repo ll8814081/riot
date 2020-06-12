@@ -103,6 +103,24 @@ func (s *StorageFSM) Get(bucket, key []byte) ([]byte, error) {
 	return value, nil
 }
 
+func (s *StorageFSM) GetPrefixKV(bucket, keyPrefix []byte) (map[string][]byte, error) {
+	s.l.Lock()
+	defer s.l.Unlock()
+
+	var (
+		value map[string][]byte
+		err   error
+	)
+	value, err = s.rs.GetPrefixKV(bucket, keyPrefix)
+	if err == bolt.ErrBucketNotFound || err == errors.ErrNotFound {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return value, nil
+}
+
 // GetBucket return the bucket detail info
 func (s *StorageFSM) GetBucket(bucket []byte) (info interface{}, err error) {
 	s.l.Lock()

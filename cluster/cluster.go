@@ -10,7 +10,7 @@ import (
 	"github.com/laohanlinux/riot/store"
 
 	"github.com/hashicorp/raft"
-	"github.com/hashicorp/raft-boltdb"
+	raftboltdb "github.com/hashicorp/raft-boltdb"
 	log "github.com/laohanlinux/utils/gokitlog"
 )
 
@@ -107,6 +107,10 @@ func (c *Cluster) Leader() string {
 
 func (c *Cluster) Get(bucket, key []byte) ([]byte, error) {
 	return c.FSM.Get(bucket, key)
+}
+
+func (c *Cluster) GetPrefixKV(bucket, keyPrefix []byte) (map[string][]byte, error) {
+	return c.FSM.GetPrefixKV(bucket, keyPrefix)
 }
 
 func initRaftLog(cfg *config.Configure, conf *raft.Config) *raftboltdb.BoltStore {

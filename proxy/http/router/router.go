@@ -20,6 +20,7 @@ func NewRouter(token ...string) http.Handler {
 			// kv router
 			macaronRouter.Group("/:bucket", func() {
 				macaronRouter.Get("/key/:key", controller.GetValue)
+				macaronRouter.Get("/keyPrefix/:keyPrefix", controller.GetPrefixKV)
 				macaronRouter.Post("/key/:key", controller.SetValue)
 				macaronRouter.Delete("/key/:key", controller.DelValue)
 			})

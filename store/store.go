@@ -23,6 +23,8 @@ type RiotStorage interface {
 	// bucket, key
 	Del([]byte, []byte) error
 	Rec() <-chan Iterm
+	// bucket, keybegin, keyend
+	GetPrefixKV([]byte, []byte) (map[string][]byte, error)
 }
 
 // RiotStorageFactory is a store Factory.

@@ -8,3 +8,5 @@ sftp-config.json
 tool/riot.exe
 .idea/
 .vscode/
+raft0/
+proxy/http/bin/riot-proxy
